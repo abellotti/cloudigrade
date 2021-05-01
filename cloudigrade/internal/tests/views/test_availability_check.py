@@ -36,8 +36,8 @@ class AvailabilityCheckViewTest(TestCase):
         )
         self.factory = APIRequestFactory()
 
-    @patch("api.models.sources.notify_application_availability")
-    def test_availability_check_success(self, mock_sources_notify):
+    @patch("cloudigrade.api.tasks.notify_application_availability_task")
+    def test_availability_check_success(self, mock_notify_sources):
         """Test happy path success for availability_check."""
         request = self.factory.post(
             "/availability_check/", data={"source_id": self.account.platform_source_id}
@@ -53,7 +53,7 @@ class AvailabilityCheckViewTest(TestCase):
         self.assertTrue(self.account.is_enabled)
         self.account2.refresh_from_db()
         self.assertTrue(self.account2.is_enabled)
-        mock_sources_notify.assert_called()
+        mock_notify_sources.delay.assert_called()
 
     def test_availability_fails_no_source_id(self):
         """Test that availability_check returns 400 if no source_id is passed."""

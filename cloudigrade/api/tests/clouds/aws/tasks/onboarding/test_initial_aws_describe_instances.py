@@ -282,7 +282,7 @@ class InitialAwsDescribeInstancesTransactionTest(TransactionTestCase):
     """Test cases for 'initial_aws_describe_instances', but with transactions."""
 
     @patch("api.util.schedule_concurrent_calculation_task")
-    @patch("api.models.sources.notify_application_availability")
+    @patch("cloudigrade.api.tasks.notify_application_availability_task")
     @patch("api.clouds.aws.tasks.onboarding.start_image_inspection")
     @patch("api.clouds.aws.tasks.onboarding.aws")
     @patch("api.clouds.aws.util.aws")
@@ -291,7 +291,7 @@ class InitialAwsDescribeInstancesTransactionTest(TransactionTestCase):
         mock_util_aws,
         mock_aws,
         mock_start,
-        mock_sources_notify,
+        mock_notify_sources,
         mock_schedule_concurrent_calculation_task,
     ):
         """
@@ -360,7 +360,7 @@ class InitialAwsDescribeInstancesTransactionTest(TransactionTestCase):
             # mock this particular call because we need to short-circuit Celery.
             account.enable()
             mock_initial.delay.assert_called()
-            mock_sources_notify.assert_called()
+            mock_notify_sources.delay.assert_called()
 
         with util_helper.clouditardis(date_of_redundant_enable):
             tasks.initial_aws_describe_instances(account.id)
@@ -384,7 +384,7 @@ class InitialAwsDescribeInstancesTransactionTest(TransactionTestCase):
         self.assertEqual(instance_event.event_type, InstanceEvent.TYPE.power_on)
 
     @patch("api.util.schedule_concurrent_calculation_task")
-    @patch("api.models.sources.notify_application_availability")
+    @patch("cloudigrade.api.tasks.notify_application_availability_task")
     @patch("api.clouds.aws.tasks.onboarding.start_image_inspection")
     @patch("api.clouds.aws.tasks.onboarding.aws")
     @patch("api.clouds.aws.util.aws")
@@ -393,7 +393,7 @@ class InitialAwsDescribeInstancesTransactionTest(TransactionTestCase):
         mock_util_aws,
         mock_aws,
         mock_start,
-        mock_sources_notify,
+        mock_notify_sources,
         mock_schedule_concurrent_calculation_task,
     ):
         """
@@ -445,6 +445,7 @@ class InitialAwsDescribeInstancesTransactionTest(TransactionTestCase):
 
         with util_helper.clouditardis(date_of_disable):
             account.disable()
+            mock_notify_sources.delay.assert_called()
             mock_util_aws.delete_cloudtrail.assert_called()
 
         # Before calling "start_image_inspection" again, let's change the mocked return
@@ -468,7 +469,7 @@ class InitialAwsDescribeInstancesTransactionTest(TransactionTestCase):
             # Even though we want to test initial_aws_describe_instances, we need to
             # mock this particular call because we need to short-circuit Celery.
             account.enable()
-            mock_sources_notify.assert_called()
+            mock_notify_sources.delay.assert_called()
             mock_initial.delay.assert_called()
 
         with util_helper.clouditardis(date_of_reenable):
