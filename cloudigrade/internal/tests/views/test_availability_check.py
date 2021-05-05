@@ -36,7 +36,7 @@ class AvailabilityCheckViewTest(TestCase):
         )
         self.factory = APIRequestFactory()
 
-    @patch("cloudigrade.api.tasks.notify_application_availability_task")
+    @patch("api.tasks.notify_application_availability_task")
     def test_availability_check_success(self, mock_notify_sources):
         """Test happy path success for availability_check."""
         request = self.factory.post(
