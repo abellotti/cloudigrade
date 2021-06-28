@@ -35,6 +35,14 @@ packaging = "*"
 PyYAML = "*"
 
 [[package]]
+name = "app-common-python"
+version = "0.1.8"
+description = ""
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "appdirs"
 version = "1.4.4"
 description = "A small Python module for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
@@ -1676,7 +1684,7 @@ notebook = ">=4.4.1"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "6d4b4560a2a82bf4644f58d8ee63a2982fbe45497cc64e483405077c7f5ae84a"
+content-hash = "f26b68e590338dfc81a49829bf3d470a9f8c7e43ef53500e4decf5c2c8023c33"
 
 [metadata.files]
 amqp = [
@@ -1688,6 +1696,9 @@ ansible = [
 ]
 ansible-base = [
     {file = "ansible-base-2.10.10.tar.gz", hash = "sha256:7744b68ed81de948853304b8104b63651c5d6b03571aee972c83379aa6b7de10"},
+]
+app-common-python = [
+    {file = "app-common-python-0.1.8.tar.gz", hash = "sha256:4419ff6bd792215661af286bd40f30c105d392b35ddda66f01cb0664a4dbf3dc"},
 ]
 appdirs = [
     {file = "appdirs-1.4.4-py2.py3-none-any.whl", hash = "sha256:a841dacd6b99318a741b166adb07e19ee71a274450e68237b4650ca1055ab128"},
