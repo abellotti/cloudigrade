@@ -6,6 +6,8 @@
 export LOGPREFIX="Clowder Init:"
 echo "${LOGPREFIX}"
 
+export CLOWDER_ENV_FILE="/tmp/clowder_env.sh"
+
 # This is so ansible can run with a random {u,g}id in OpenShift
 echo "ansible:x:$(id -u):$(id -g):,,,:${HOME}:/bin/bash" >> /etc/passwd
 echo "ansible:x:$(id -G | cut -d' ' -f 2)" >> /etc/group
@@ -29,19 +31,26 @@ if [[ -z "${ACG_CONFIG}" ]]; then
 else
   echo "${LOGPREFIX} Running in a clowder environment"
 
-  export DATABASE_HOST="`cat $ACG_CONFIG | jq -r '.database.hostname'`"
-  export DATABASE_PORT="`cat $ACG_CONFIG | jq -r '.database.port'`"
+  if [[ ! -f "${CLOWDER_ENV_FILE}" ]]; then
+    python3 /opt/cloudigrade/scripts/json_to_env.py --prefix "CLOWDER_" --export "${ACG_CONFIG}" > "${CLOWDER_ENV_FILE}"
+  fi
+  source "${CLOWDER_ENV_FILE}"
+
+  export DATABASE_HOST="${CLOWDER_DATABASE_HOSTNAME}"
+  export DATABASE_PORT="${CLOWDER_DATABASE_PORT}"
 
   # Wait for the database to be ready
   echo "${LOGPREFIX} Waiting for database readiness ..."
   check_svc_status $DATABASE_HOST $DATABASE_PORT
 
   # If postigrade is deployed in Clowder, let's also make sure sure that it is ready
-  export PG_SVC="`cat $ACG_CONFIG | jq -r '.endpoints[].app' | grep -n 'postigrade'`"
+  export PG_SVC="`env | egrep '^CLOWDER_ENDPOINTS_\d+_APP=postigrade'"
+
   if [[ -n "${PG_SVC}" ]]; then
-    EP_NUM=$(( ${PG_SVC/:*/} - 1 ))
-    DATABASE_HOST=$(cat $ACG_CONFIG | jq -r ".endpoints[${EP_NUM}].hostname")
-    DATABASE_PORT=$(cat $ACG_CONFIG | jq -r ".endpoints[${EP_NUM}].port")
+    num_str=${PG_SVC##CLOWDER_ENDPOINTS_}
+    EP_NUM="${num_str%_*}"
+    DH_VAR="CLOWDER_ENDPOINTS_${EP_NUM}_HOSTNAME"; DATABASE_HOST="${!DH_VAR}"
+    DP_VAR="CLOWDER_ENDPOINTS_${EP_NUM}_PORT";     DATABASE_PORT="${!DP_VAR}"
 
     echo "${LOGPREFIX} Waiting for postigrade readiness ..."
     check_svc_status $DATABASE_HOST $DATABASE_PORT

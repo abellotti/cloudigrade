@@ -50,6 +50,7 @@ COPY --from=build /opt/cloudigrade/.venv/ .venv/
 # Copy in cloudigrade
 COPY deployment/playbooks/ ./playbooks
 COPY deployment/scripts/cloudigrade_init.sh ./scripts/cloudigrade_init.sh
+COPY deployment/scripts/json_to_env.py ./scripts/json_to_env.py
 COPY cloudigrade .
 
 EXPOSE 8000
