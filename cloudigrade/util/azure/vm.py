@@ -39,7 +39,24 @@ def get_vms_for_subscription(azure_subscription_id):
             vm["license_type"] = discovered_vm.license_type
             vm["vm_size"] = discovered_vm.hardware_profile.vm_size
             vm["hardware_profile"] = vars(discovered_vm.hardware_profile)
+            vm["storage_profile"] = vars(discovered_vm.storage_profile)
+            vm["os_profile"] = vars(discovered_vm.os_profile)
+            vm["linux_configuration"] = None
+            if discovered_vm.os_profile.linux_configuration:
+                vm["linux_configuration"] = vars(
+                    discovered_vm.os_profile.linux_configuration
+                )
+            vm["network_profile"] = vars(discovered_vm.network_profile)
+            vm["diagnostics_profile"] = vars(discovered_vm.diagnostics_profile)
             vm["os_disk"] = vars(discovered_vm.storage_profile.os_disk)
+            vm["managed_disk"] = None
+            if (
+                discovered_vm.storage_profile.os_disk
+                and discovered_vm.storage_profile.os_disk.managed_disk
+            ):
+                vm["managed_disk"] = vars(
+                    discovered_vm.storage_profile.os_disk.managed_disk
+                )
             vm["image"] = vars(discovered_vm.storage_profile.image_reference)
             vms.append(vm)
             return vms
